@@ -13,7 +13,8 @@ data, dataset = load_data(library, matrix_format)
 if library == "PyG":
     model = GCN(input_dim=data.num_node_features, hidden_dim=16, output_dim=dataset.num_classes)
 else:
-    model = GCN(input_dim=data.ndata['feat'].shape[1], hidden_dim=16, output_dim=dataset.ndata['label'].max().item() + 1)
+    model = GCN(input_dim=data.ndata['feat'].shape[1], hidden_dim=16, output_dim=data.ndata['label'].max().item() + 1)
 
 # Trenowanie i pomiary wydajności
 train_time, mem_usage = train(model, data)
+print(f"Czas trenowania: {train_time:.2f} s, Zużycie pamięci: {mem_usage:.2f} MB")

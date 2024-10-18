@@ -5,7 +5,6 @@ import time
 import memory_profiler
 
 
-# Funkcja trenowania z pomiarami czasu i pamięci
 def train(model, data):
     optimizer = optim.Adam(model.parameters(), lr=0.01)
 
@@ -13,27 +12,31 @@ def train(model, data):
 
     # Pomiar zużycia pamięci przed rozpoczęciem
     mem_usage_before = memory_profiler.memory_usage()[0]
+    start_time = time.time()
 
-    start_time = time.time()  # Zaczynamy pomiar czasu
     for epoch in range(200):
         optimizer.zero_grad()
+
         out = model(data)
-        loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])
+
+        if hasattr(data, 'train_mask'):
+            # PyTorch Geometric
+            loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])
+        else:
+            # DGL
+            loss = F.nll_loss(out[data.ndata['train_mask']], data.ndata['label'][data.ndata['train_mask']])
+
         loss.backward()
         optimizer.step()
 
         if epoch % 10 == 0:
             print(f'Epoch {epoch + 1}, Loss: {loss:.4f}')
 
-    end_time = time.time()  # Zakończ pomiar czasu
-
-    # Pomiar zużycia pamięci po zakończeniu
+    # Pomiar czasu trenowania
+    end_time = time.time()
     mem_usage_after = memory_profiler.memory_usage()[0]
 
-    training_time = end_time - start_time
-    mem_usage_diff = mem_usage_after - mem_usage_before
+    train_time = end_time - start_time
+    mem_usage = mem_usage_after - mem_usage_before
 
-    print(f"Czas trenowania: {training_time:.2f} sekund")
-    print(f"Zużycie pamięci: {mem_usage_diff:.2f} MB")
-
-    return training_time, mem_usage_diff
+    return train_time, mem_usage
