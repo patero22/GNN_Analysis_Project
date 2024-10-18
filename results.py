@@ -28,9 +28,17 @@ def run_experiments():
                     if lib == "PyG":
                         model = model_class(input_dim=data.num_node_features, hidden_dim=16, output_dim=dataset.num_classes)
                     else:
-                        model = model_class(input_dim=data.ndata['feat'].shape[1], hidden_dim=16, output_dim=data.ndata['label'].max().item() + 1)
+                        # Dla DGL: Sprawdzamy, czy dane to tensor
+                        if isinstance(data.ndata['feat'], dict):
+                            feat = data.ndata['feat']['_N']  # Przykład, jak uzyskać tensor dla 'feat'
+                            label = data.ndata['label']['_N']  # Podobnie dla 'label'
+                        else:
+                            feat = data.ndata['feat']
+                            label = data.ndata['label']
+
+                        model = model_class(input_dim=feat.shape[1], hidden_dim=16, output_dim=label.max().item() + 1)
 
                     # Uruchamiamy trenowanie i zapisujemy wyniki
                     train_time, mem_usage = train(model, data)
                     writer.writerow([model_name, lib, fmt, train_time, mem_usage])
-                    print(f"Finished {model_name} with {lib} using {fmt} format.\n")
+                    print(f"Finished {model_name} with {lib} using {fmt} format.")

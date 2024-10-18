@@ -22,5 +22,5 @@ run_experiments()
 
 # Trenowanie i pomiary wydajności
 train_time, mem_usage = train(model, data)
-print(f"Czas trenowania: {train_time:.2f} s, Zużycie pamięci: {mem_usage:.2f} MB")
+#print(f"Czas trenowania: {train_time:.2f} s, Zużycie pamięci: {mem_usage:.2f} MB")
 

@@ -11,24 +11,26 @@ class GCN(torch.nn.Module):
         self.conv2 = GCNConv(hidden_dim, output_dim)
 
     def forward(self, data):
-        # Obsługa CSR (SparseTensor)
-        if hasattr(data, 'adj_t') and isinstance(data.adj_t, SparseTensor):
+        # Sprawdzenie, czy dane są z PyG (PyTorch Geometric)
+        if hasattr(data, 'x') and (hasattr(data, 'edge_index') or hasattr(data, 'adj_t')):
             x = data.x
-            edge_index = data.adj_t  # Bezpośrednie użycie SparseTensor (CSR)
 
-            # Używamy SparseTensor w warstwach GCN
+            # Sprawdzenie, czy dane są w formacie CSR (SparseTensor)
+            if hasattr(data, 'adj_t') and isinstance(data.adj_t, SparseTensor):
+                edge_index = data.adj_t
+            else:
+                edge_index = data.edge_index
+
             x = F.relu(self.conv1(x, edge_index))
             x = self.conv2(x, edge_index)
 
-        # Obsługa COO (standardowe edge_index)
-        elif hasattr(data, 'x') and hasattr(data, 'edge_index'):
-            x, edge_index = data.x, data.edge_index
-            x = F.relu(self.conv1(x, edge_index))
-            x = self.conv2(x, edge_index)
+        # Sprawdzenie, czy dane są z DGL
+        elif hasattr(data, 'ndata'):
+            if isinstance(data.ndata['feat'], dict):
+                x = data.ndata['feat']['_N']  # Pobieramy tensor dla 'feat'
+            else:
+                x = data.ndata['feat']
 
-        # Obsługa DGL
-        else:
-            x = data.ndata['feat']
             edge_index = torch.stack(data.edges(), dim=0)
             x = F.relu(self.conv1(x, edge_index))
             x = self.conv2(x, edge_index)
