@@ -1,19 +1,20 @@
 import torch_geometric.transforms as T
 import dgl
+from torch_sparse import SparseTensor
 
 # Funkcja obsługująca formaty macierzy dla PyTorch Geometric (PyG)
 def convert_pyg_format(data, matrix_format):
     if matrix_format == "COO":
-        # PyG domyślnie używa formatu COO, nie trzeba konwertować
+        # Dane już w formacie COO (edge_index)
         return data
     elif matrix_format == "CSR":
-        # Konwersja do formatu CSR
-        data = T.ToSparseTensor()(data)  # Konwersja na CSR
+        # Konwersja do CSR (SparseTensor)
+        data.adj_t = SparseTensor(row=data.edge_index[0], col=data.edge_index[1], value=None).to('cpu')
         return data
     elif matrix_format == "CSC":
-        # Konwersja do CSR i transpozycja do formatu CSC
-        data = T.ToSparseTensor()(data)
-        data.adj_t = data.adj_t.transpose()  # CSR -> CSC przez transpozycję
+        # Konwersja do CSR, a potem transpozycja do CSC
+        data.adj_t = SparseTensor(row=data.edge_index[0], col=data.edge_index[1], value=None).to('cpu')
+        data.adj_t = data.adj_t.t()  # Użycie t() zamiast transpose()
         return data
     else:
         raise ValueError("Nieznany format macierzy dla PyG: {}".format(matrix_format))

@@ -1,4 +1,3 @@
-import torch
 import torch.optim as optim
 import torch.nn.functional as F
 import time
@@ -10,9 +9,8 @@ def train(model, data):
 
     model.train()
 
-    # Pomiar zużycia pamięci przed rozpoczęciem
-    mem_usage_before = memory_profiler.memory_usage()[0]
     start_time = time.time()
+    mem_usage_before = memory_profiler.memory_usage()[0]
 
     for epoch in range(200):
         optimizer.zero_grad()
@@ -20,7 +18,7 @@ def train(model, data):
         out = model(data)
 
         if hasattr(data, 'train_mask'):
-            # PyTorch Geometric
+            # PyG
             loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])
         else:
             # DGL
@@ -32,7 +30,6 @@ def train(model, data):
         if epoch % 10 == 0:
             print(f'Epoch {epoch + 1}, Loss: {loss:.4f}')
 
-    # Pomiar czasu trenowania
     end_time = time.time()
     mem_usage_after = memory_profiler.memory_usage()[0]
 

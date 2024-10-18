@@ -33,4 +33,4 @@ def run_experiments():
                     # Uruchamiamy trenowanie i zapisujemy wyniki
                     train_time, mem_usage = train(model, data)
                     writer.writerow([model_name, lib, fmt, train_time, mem_usage])
-                    print(f"Finished {model_name} with {lib} using {fmt} format.")
+                    print(f"Finished {model_name} with {lib} using {fmt} format.\n")
