@@ -1,6 +1,8 @@
 from data_loader import load_data
 from train import train
 from models import GCN
+from results import run_experiments
+
 
 # Parametry
 library = "PyG"  # Możliwe wartości: "PyG", "DGL"
@@ -15,6 +17,10 @@ if library == "PyG":
 else:
     model = GCN(input_dim=data.ndata['feat'].shape[1], hidden_dim=16, output_dim=data.ndata['label'].max().item() + 1)
 
+# Uruchom automatyczne eksperymenty
+run_experiments()
+
 # Trenowanie i pomiary wydajności
 train_time, mem_usage = train(model, data)
 print(f"Czas trenowania: {train_time:.2f} s, Zużycie pamięci: {mem_usage:.2f} MB")
+
