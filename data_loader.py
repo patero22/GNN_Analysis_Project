@@ -7,7 +7,7 @@ from torch_geometric.transforms import ToSparseTensor
 # Funkcja do ładowania danych w zależności od wybranej biblioteki, formatu i zbioru danych
 def load_data(library, matrix_format):
     # Zmiana tutaj: ustawiamy zbiór danych na "CiteSeer" lub "PubMed"
-    dataset_name = "Cora"  # Możesz tu zmienić na np. "PubMed"
+    dataset_name = "CiteSeer"  # Możesz tu zmienić na np. "PubMed", "Cora", "CiteSeer"
 
     if library == "PyG":
         dataset = Planetoid(root=f'/tmp/{dataset_name}', name=dataset_name)
