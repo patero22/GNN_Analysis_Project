@@ -71,22 +71,17 @@ class GAT(torch.nn.Module):
     def forward(self, data):
         if hasattr(data, 'x') and hasattr(data, 'edge_index'):  # PyG
             x, edge_index = data.x, data.edge_index
-            x.requires_grad = True  # Dodajemy requires_grad do wejściowego tensora
-
         else:  # DGL
             if isinstance(data.ndata['feat'], dict):
-                x = data.ndata['feat']['_N']  # Heterogeniczne grafy
+                x = data.ndata['feat']['_N']
             else:
-                x = data.ndata['feat']  # Jednorodne grafy
+                x = data.ndata['feat']
 
             edge_index = torch.stack(data.edges(), dim=0)
-            x_src, x_dst = x[edge_index[0]], x[edge_index[1]]
-
-            x = F.relu(self.conv1((x_src, x_dst), edge_index))
-            x = self.conv2((x_src, x_dst), edge_index)
 
         # Dla PyG, nadal używamy edge_index z PyG
-        x = F.relu(self.conv1(x, edge_index))
-        x = self.conv2(x, edge_index)
+        x = F.relu(self.conv1(x, edge_index))  # Pierwsza warstwa GATConv
+        x = self.conv2(x, edge_index)          # Druga warstwa GATConv
 
         return F.log_softmax(x, dim=1)
+

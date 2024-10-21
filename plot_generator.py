@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 # Funkcja do generowania wykresów
 def generate_plots(results):
     # Konwertujemy wyniki na DataFrame dla łatwego tworzenia wykresów
-    df = pd.DataFrame(results, columns=["Model", "Library", "Format", "Training Time (s)", "Memory Usage (MB)", "Validation Accuracy"])
+    df = pd.DataFrame(results,
+                      columns=["Model", "Library", "Format", "Dataset", "Training Time (s)", "Memory Usage (MB)",
+                               "Validation Accuracy"])
 
     # Wykresy dla różnych parametrów
     # 1. Wykres czasu trenowania
