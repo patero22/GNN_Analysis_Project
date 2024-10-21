@@ -45,11 +45,17 @@ class GraphSAGE(torch.nn.Module):
         self.conv2 = SAGEConv(hidden_dim, output_dim)
 
     def forward(self, data):
-        if hasattr(data, 'x') and hasattr(data, 'edge_index'):
-            x, edge_index = data.x, data.edge_index  # PyG
-        else:
-            x = data.ndata['feat']
-            edge_index = torch.stack(data.edges(), dim=0)  # DGL
+        if hasattr(data, 'x') and hasattr(data, 'edge_index'):  # PyG
+            x, edge_index = data.x, data.edge_index
+        else:  # DGL
+            if isinstance(data.ndata['feat'], dict):
+                # Heterogeniczny graf: Pobieramy dane dla typu węzła '_N'
+                x = data.ndata['feat']['_N']
+                edge_index = torch.stack(data.edges(), dim=0)
+            else:
+                # Graf jednorodny
+                x = data.ndata['feat']
+                edge_index = torch.stack(data.edges(), dim=0)
 
         x = F.relu(self.conv1(x, edge_index))
         x = self.conv2(x, edge_index)
@@ -63,12 +69,24 @@ class GAT(torch.nn.Module):
         self.conv2 = GATConv(hidden_dim * heads, output_dim, heads=1)
 
     def forward(self, data):
-        if hasattr(data, 'x') and hasattr(data, 'edge_index'):
-            x, edge_index = data.x, data.edge_index  # PyG
-        else:
-            x = data.ndata['feat']
-            edge_index = torch.stack(data.edges(), dim=0)  # DGL
+        if hasattr(data, 'x') and hasattr(data, 'edge_index'):  # PyG
+            x, edge_index = data.x, data.edge_index
+            x.requires_grad = True  # Dodajemy requires_grad do wejściowego tensora
 
+        else:  # DGL
+            if isinstance(data.ndata['feat'], dict):
+                x = data.ndata['feat']['_N']  # Heterogeniczne grafy
+            else:
+                x = data.ndata['feat']  # Jednorodne grafy
+
+            edge_index = torch.stack(data.edges(), dim=0)
+            x_src, x_dst = x[edge_index[0]], x[edge_index[1]]
+
+            x = F.relu(self.conv1((x_src, x_dst), edge_index))
+            x = self.conv2((x_src, x_dst), edge_index)
+
+        # Dla PyG, nadal używamy edge_index z PyG
         x = F.relu(self.conv1(x, edge_index))
         x = self.conv2(x, edge_index)
+
         return F.log_softmax(x, dim=1)

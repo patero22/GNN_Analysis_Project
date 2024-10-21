@@ -4,42 +4,62 @@ import dgl
 from format_manager import convert_pyg_format, convert_dgl_format
 from torch_geometric.transforms import ToSparseTensor
 
-
+# Funkcja do ładowania danych w zależności od wybranej biblioteki, formatu i zbioru danych
 def load_data(library, matrix_format):
-    dataset = Planetoid(root='/tmp/Cora', name='Cora')
-    data = dataset[0]
+    # Zmiana tutaj: ustawiamy zbiór danych na "CiteSeer" lub "PubMed"
+    dataset_name = "CiteSeer"  # Możesz tu zmienić na np. "PubMed"
 
     if library == "PyG":
-        # Konwersja dla PyG
+        dataset = Planetoid(root=f'/tmp/{dataset_name}', name=dataset_name)
+        data = dataset[0]
+
+        # Konwertujemy format dla PyG
         data = convert_pyg_format(data, matrix_format)
-        return data, dataset
+        return data, dataset_name, dataset
 
     elif library == "DGL":
+        dataset = Planetoid(root=f'/tmp/{dataset_name}', name=dataset_name)
+        data = dataset[0]
+
         # Tworzenie grafu DGL
         graph = dgl.graph((data.edge_index[0], data.edge_index[1]), num_nodes=data.num_nodes)
         graph.ndata['feat'] = data.x
         graph.ndata['label'] = data.y
 
-        # Tworzenie masek trenowania w DGL
+        # Konwertujemy format dla DGL
+        graph = convert_dgl_format(graph, matrix_format)
+
+        # Ustawiamy maski (np. train_mask, val_mask, test_mask) dla DGL
         create_dgl_masks(graph)
 
-        return graph, dataset
+        return graph, dataset_name, dataset
+def create_dgl_masks(graph):
+    # Sprawdzamy, czy graf jest heterogeniczny
+    if len(graph.ntypes) > 1:  # Mamy więcej niż jeden typ węzłów
+        for node_type in graph.ntypes:
+            num_nodes = graph.num_nodes(node_type)
+            train_mask = torch.zeros(num_nodes, dtype=torch.bool)
+            val_mask = torch.zeros(num_nodes, dtype=torch.bool)
+            test_mask = torch.zeros(num_nodes, dtype=torch.bool)
 
-# Funkcja do tworzenia masek dla DGL
-def create_dgl_masks(graph, train_ratio=0.8, val_ratio=0.1):
-    num_nodes = graph.num_nodes()
-    train_size = int(num_nodes * train_ratio)
-    val_size = int(num_nodes * val_ratio)
+            train_mask[:int(0.6 * num_nodes)] = True
+            val_mask[int(0.6 * num_nodes):int(0.8 * num_nodes)] = True
+            test_mask[int(0.8 * num_nodes):] = True
 
-    train_mask = torch.zeros(num_nodes, dtype=torch.bool)
-    val_mask = torch.zeros(num_nodes, dtype=torch.bool)
-    test_mask = torch.zeros(num_nodes, dtype=torch.bool)
+            # Przypisujemy maski do konkretnego typu węzła
+            graph.nodes[node_type].data['train_mask'] = train_mask
+            graph.nodes[node_type].data['val_mask'] = val_mask
+            graph.nodes[node_type].data['test_mask'] = test_mask
+    else:  # Dla grafu jednorodnego
+        num_nodes = graph.num_nodes()
+        train_mask = torch.zeros(num_nodes, dtype=torch.bool)
+        val_mask = torch.zeros(num_nodes, dtype=torch.bool)
+        test_mask = torch.zeros(num_nodes, dtype=torch.bool)
 
-    indices = torch.randperm(num_nodes)
-    train_mask[indices[:train_size]] = True
-    val_mask[indices[train_size:train_size + val_size]] = True
-    test_mask[indices[train_size + val_size:]] = True
+        train_mask[:int(0.6 * num_nodes)] = True
+        val_mask[int(0.6 * num_nodes):int(0.8 * num_nodes)] = True
+        test_mask[int(0.8 * num_nodes):] = True
 
-    graph.ndata['train_mask'] = train_mask
-    graph.ndata['val_mask'] = val_mask
-    graph.ndata['test_mask'] = test_mask
+        graph.ndata['train_mask'] = train_mask
+        graph.ndata['val_mask'] = val_mask
+        graph.ndata['test_mask'] = test_mask

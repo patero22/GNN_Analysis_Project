@@ -1,10 +1,12 @@
 import csv
 from time import time
+import os
 from data_loader import load_data
-from train import train
+from train import train, evaluate_model
 from models import GCN, GraphSAGE, GAT
 
-# Definicja eksperymentów
+
+# Funkcja do zbierania wyników i zapisywania do CSV
 def run_experiments():
     models = {
         'GCN': GCN,
@@ -14,31 +16,45 @@ def run_experiments():
     formats = ["COO", "CSR", "CSC"]
     libraries = ["PyG", "DGL"]
 
-    # Otwieramy plik CSV do zapisu wyników
-    with open('experiment_results.csv', mode='w', newline='') as file:
+    results = []
+
+    file_exists = os.path.isfile('experiment_results.csv')
+
+    with open('experiment_results.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["Model", "Library", "Format", "Training Time (s)", "Memory Usage (MB)"])
+        # Zapisz nagłówki tylko, jeśli plik nie istnieje
+        if not file_exists:
+            writer.writerow(["Model", "Library", "Format", "Dataset", "Training Time (s)", "Memory Usage (MB)", "Validation Accuracy"])
 
         for model_name, model_class in models.items():
             for lib in libraries:
                 for fmt in formats:
-                    print(f"Running experiment for {model_name} with {lib} using {fmt} format.")
-                    data, dataset = load_data(lib, fmt)
+                    # Ładujemy dane z odpowiednim zbiorem danych i formatem
+                    data, dataset_name, dataset = load_data(lib, fmt)
+                    print(f"Running experiment for {model_name} with {lib} using {fmt} format on {dataset_name}.")
 
                     if lib == "PyG":
                         model = model_class(input_dim=data.num_node_features, hidden_dim=16, output_dim=dataset.num_classes)
                     else:
-                        # Dla DGL: Sprawdzamy, czy dane to tensor
+                        # Sprawdzamy, czy cechy węzłów są w słowniku (dla heterogenicznych grafów)
                         if isinstance(data.ndata['feat'], dict):
-                            feat = data.ndata['feat']['_N']  # Przykład, jak uzyskać tensor dla 'feat'
-                            label = data.ndata['label']['_N']  # Podobnie dla 'label'
+                            # Pobieramy cechy dla konkretnego typu węzła (zakładamy, że używamy 'node_type' np. '_N')
+                            feat = data.ndata['feat']['_N']
+                            label = data.ndata['label']['_N']
                         else:
+                            # Dla grafów jednorodnych
                             feat = data.ndata['feat']
                             label = data.ndata['label']
 
                         model = model_class(input_dim=feat.shape[1], hidden_dim=16, output_dim=label.max().item() + 1)
 
-                    # Uruchamiamy trenowanie i zapisujemy wyniki
                     train_time, mem_usage = train(model, data)
-                    writer.writerow([model_name, lib, fmt, train_time, mem_usage])
-                    print(f"Finished {model_name} with {lib} using {fmt} format.")
+                    accuracy = evaluate_model(model, data)  # Opcjonalna funkcja oceny modelu
+
+                    # Zapisujemy wyniki z nazwą zbioru danych
+                    writer.writerow([model_name, lib, fmt, dataset_name, train_time, mem_usage, accuracy])
+                    results.append([model_name, lib, fmt, dataset_name, train_time, mem_usage, accuracy])
+
+                    print(f"Finished {model_name} with {lib} using {fmt} format on {dataset_name}.")
+
+    return results
