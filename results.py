@@ -48,8 +48,8 @@ def run_experiments():
 
                         model = model_class(input_dim=feat.shape[1], hidden_dim=16, output_dim=label.max().item() + 1)
 
-                    train_time, mem_usage = train(model, data)
-                    accuracy = evaluate_model(model, data)  # Opcjonalna funkcja oceny modelu
+                    train_time, mem_usage = train(model, data, lib)
+                    accuracy = evaluate_model(model, data, lib)  # Opcjonalna funkcja oceny modelu
 
                     # Zapisujemy wyniki z nazwą zbioru danych
                     writer.writerow([model_name, lib, fmt, dataset_name, train_time, mem_usage, accuracy])
