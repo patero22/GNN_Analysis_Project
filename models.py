@@ -84,4 +84,3 @@ class GAT(torch.nn.Module):
         x = self.conv2(x, edge_index)          # Druga warstwa GATConv
 
         return F.log_softmax(x, dim=1)
-
