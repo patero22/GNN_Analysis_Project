@@ -25,3 +25,4 @@ results = run_experiments()
 
 # Możesz dodać generowanie wykresów po zakończeniu eksperymentów
 #generate_plots(results)
+#test

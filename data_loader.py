@@ -3,6 +3,7 @@ import torch
 import dgl
 from format_manager import convert_pyg_format, convert_dgl_format
 from torch_geometric.transforms import ToSparseTensor
+#test
 
 # Funkcja do ładowania danych w zależności od wybranej biblioteki, formatu i zbioru danych
 def load_data(library, matrix_format):
