@@ -12,7 +12,7 @@ def train(model, data):
     start_time = time.time()
     mem_usage_before = memory_profiler.memory_usage()[0]
 
-    for epoch in range(20):
+    for epoch in range(200):
         optimizer.zero_grad()
 
         out = model(data)
