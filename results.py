@@ -62,7 +62,13 @@ def run_experiments():
                             label = label['_N']  # Zakładamy, że '_N' to typ węzła w grafie heterogenicznym
                         model = model_class(input_dim=feat.shape[1], hidden_dim=16, output_dim=label.max().item() + 1)
 
-                    train_time, mem_usage = train(model, data)
+                    train_time, mem_usage = train(
+                        model,
+                        data,
+                        analyze_with_profiler=True,
+                        profiler_name=f"{model_name}_{lib}_{fmt}_{dataset_name}"
+                    )
+
                     accuracy = evaluate_model(model, data)
 
                     writer.writerow([model_name, lib, fmt, dataset_name, train_time, mem_usage, accuracy])

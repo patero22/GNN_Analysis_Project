@@ -9,4 +9,4 @@ results = run_experiments()
 
 
 # Generowanie wykresu po zakończeniu eksperymentów
-generate_plots()
+#generate_plots()
