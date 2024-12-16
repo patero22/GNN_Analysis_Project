@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-#test
+#OGB
 # Funkcja do generowania wykresów
 def generate_plots(results):
     # Konwertujemy wyniki na DataFrame dla łatwego tworzenia wykresów

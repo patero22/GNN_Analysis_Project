@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+#OGB
 # Funkcja do generowania wszystkich wykresów na podstawie zebranych danych
 def generate_plots(results_file='experiment_results.csv'):
     # Wczytanie danych z pliku CSV

@@ -5,7 +5,7 @@ import torch
 import dgl
 from format_manager import convert_pyg_format, convert_dgl_format
 from torch_geometric.transforms import ToSparseTensor
-#test
+#OGB
 
 def load_data(library, matrix_format, dataset_name="ogbn-arxiv"):
     if dataset_name.startswith("ogbn-"):  # Jeśli jest to zbiór danych z OGB

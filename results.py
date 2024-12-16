@@ -5,7 +5,7 @@ from data_loader import load_data
 from train import train, evaluate_model
 from models import GCN, GraphSAGE, GAT
 import pandas as pd
-#test
+#OGB
 
 
 # Funkcja do zbierania wyników i zapisywania do CSV

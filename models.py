@@ -2,8 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv, SAGEConv, GATConv
 from torch_sparse import SparseTensor
-#test
-
+#OGB
 
 class GCN(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
