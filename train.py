@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import time
 import memory_profiler
 import torch
-#OGB
+##OGB_git
 
 def train(model, data):
     optimizer = optim.Adam(model.parameters(), lr=0.01)

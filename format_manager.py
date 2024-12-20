@@ -1,7 +1,7 @@
 import torch_geometric.transforms as T
 import dgl
 from torch_sparse import SparseTensor
-#OGB
+##OGB_git
 # Funkcja obsługująca formaty macierzy dla PyTorch Geometric (PyG)
 def convert_pyg_format(data, matrix_format):
     if matrix_format == "COO":

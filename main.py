@@ -4,7 +4,7 @@ from models import GCN
 from results import run_experiments
 from plot_generator import generate_plots
 from visualization import generate_plots
-#OGB
+##OGB_git
 
 results = run_experiments()
 #results = run_experiments(dataset_name="ogbn-arxiv")
